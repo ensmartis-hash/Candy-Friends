@@ -5,7 +5,8 @@
   "type": "module",
   "main": "./types.ts",
   "exports": {
-    ".": "./types.ts"
+    ".": "./types.ts",
+    "./abilities": "./abilities.ts"
   },
   "scripts": {
     "test": "vitest run",

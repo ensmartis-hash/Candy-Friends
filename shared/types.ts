@@ -200,7 +200,7 @@ export interface AbilityConfig {
   id: string;
   cooldown: number;           // Milliseconds
   type: AbilityType;
-  params: Record<string, number>;  // Flexible per-type parameters
+  params: Record<string, number | boolean>;  // Flexible per-type parameters
 }
 
 // Runtime ability state (per player)

@@ -23,6 +23,7 @@ import {
   vec2Mul,
   WorldState,
 } from '@candy-friends/shared';
+import { executeAbilityServer, getAbilityConfig } from './abilities';
 
 export const RING_BUFFER_TICKS = 100;
 const MOVE_SPEED = GAME_CONSTANTS.TILE_SIZE * 5; // 5 tiles / second
@@ -385,7 +386,7 @@ export class GameRoom {
   ): Promise<{ ok: true } | { ok: false; code: string; msg: string; status: number }> {
     const now = Date.now();
     let player: PlayerRecord | undefined;
-    let assignedChar: CharacterId;
+    let assignedChar: CharacterId = CHARACTER_ORDER[0];
     let reconnected = false;
 
     if (opts.reconnectId) {
@@ -639,14 +640,86 @@ export class GameRoom {
     if (abilityId !== cfg.ability.id) return;
     if (player.state.ability.cooldownRemaining > 0) return;
 
-    player.state.ability.cooldownRemaining = cfg.ability.cooldown;
+    // Use shared ability system
+    const abilityConfig = getAbilityConfig(player.state.characterId);
+    const result = executeAbilityServer(
+      {
+        playerState: player.state,
+        worldState: this.world,
+        target,
+        deltaTime: GAME_CONSTANTS.TICK_MS / 1000,
+      },
+      abilityConfig
+    );
+
+    if (!result.success) return;
+
+    // Apply cooldown
+    player.state.ability.cooldownRemaining = result.cooldownMs;
     player.state.ability.active = true;
-    const duration = cfg.ability.params.duration;
-    if (typeof duration === 'number') {
-      player.state.ability.activeUntil = Date.now() + duration;
+    if (result.flagChanges) {
+      Object.assign(player.state.flags, result.flagChanges);
+    }
+    if (result.positionChange) {
+      player.state.pos.x += result.positionChange.x;
+      player.state.pos.y += result.positionChange.y;
     }
     player.state.anim = 'ability';
     this.events.push({ type: 'ability_used', playerId: player.info.id, abilityId, target });
+
+    // Apply effects
+    for (const effect of result.effects) {
+      this.applyAbilityEffect(player, effect, target);
+    }
+  }
+
+  private applyAbilityEffect(player: PlayerRecord, effect: any, target?: Vec2): void {
+    switch (effect.type) {
+      case 'area':
+        if (effect.stunDuration) {
+          // Stun nearby players (excluding self)
+          for (const other of this.players.values()) {
+            if (other.info.id === player.info.id) continue;
+            const dist = vec2Dist(other.state.pos, player.state.pos);
+            if (dist <= (effect.radius || 60)) {
+              other.state.flags.stunned = true;
+              setTimeout(() => {
+                other.state.flags.stunned = false;
+              }, effect.stunDuration);
+            }
+          }
+        }
+        if (effect.healPerSec && effect.duration) {
+          // Heal nearby players
+          for (const other of this.players.values()) {
+            const dist = vec2Dist(other.state.pos, player.state.pos);
+            if (dist <= (effect.radius || 80)) {
+              const healAmount = Math.floor(effect.healPerSec * (effect.duration / 1000));
+              other.state.hp = Math.min(other.state.maxHp, other.state.hp + healAmount);
+            }
+          }
+        }
+        break;
+      case 'projectile':
+        if (effect.pullForce && effect.canRescue && target) {
+          // Pull target player toward caster (Taffy Tia rescue)
+          for (const other of this.players.values()) {
+            if (other.info.id === player.info.id) continue;
+            const dist = vec2Dist(other.state.pos, target);
+            if (dist <= 30) { // Close to target position
+              const dx = player.state.pos.x - other.state.pos.x;
+              const dy = player.state.pos.y - other.state.pos.y;
+              const pullDist = Math.hypot(dx, dy);
+              if (pullDist > 0) {
+                const pullRatio = Math.min(effect.pullForce / pullDist, 1);
+                other.state.pos.x += dx * pullRatio;
+                other.state.pos.y += dy * pullRatio;
+              }
+            }
+          }
+        }
+        break;
+    }
   }
 
   private interact(player: PlayerRecord, entityId: string): void {

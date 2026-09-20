@@ -7,7 +7,7 @@ import { GameRoom } from './GameRoom';
 
 // Type for Cloudflare Env
 export interface Env {
-  GAME_ROOM: DurableObjectNamespace<GameRoom>;
+  GAME_ROOM: DurableObjectNamespace;
 }
 
 // Hono app

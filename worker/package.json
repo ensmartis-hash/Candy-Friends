@@ -18,8 +18,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240800.0",
+    "typescript": "^5.5.0",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^2.0.0",
-    "wrangler": "^3.70.0",
-    "typescript": "^5.5.0"
+    "wrangler": "^3.70.0"
   }
 }
