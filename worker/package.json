@@ -1,0 +1,25 @@
+{
+  "name": "@candy-friends/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@candy-friends/shared": "file:../shared",
+    "@msgpack/msgpack": "^3.0.0",
+    "hono": "^4.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240800.0",
+    "vitest": "^2.0.0",
+    "wrangler": "^3.70.0",
+    "typescript": "^5.5.0"
+  }
+}

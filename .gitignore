@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+coverage/
+.wrangler/
+.vite/
+*.tsbuildinfo
+
+# Env and local secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+*.local
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
