@@ -2,6 +2,7 @@ name = "candy-friends-worker"
 main = "src/index.ts"
 compatibility_date = "2024-08-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "8bf1d197a20e59c7aecc54c8ba5b54ba"
 
 [build]
 command = "npm run build"
@@ -13,6 +14,10 @@ class_name = "GameRoom"
 [[durable_objects.migrations]]
 tag = "v1"
 new_classes = ["GameRoom"]
+
+[exports.GameRoom]
+type = "durable-object"
+storage = "sqlite"
 
 [observability]
 enabled = true

@@ -6,6 +6,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc && vite build --mode worker",
     "deploy": "wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,10 +18,10 @@
     "hono": "^4.5.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240800.0",
+    "@cloudflare/workers-types": "^5.20260921.1",
     "typescript": "^5.5.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^2.0.0",
-    "wrangler": "^3.70.0"
+    "wrangler": "^4.135.0"
   }
 }
