@@ -7,6 +7,7 @@ import { InputManager, InputState } from '../input/InputManager';
 import { PlayerEntity } from '../entities/PlayerEntity';
 import { OtherPlayerEntity } from '../entities/OtherPlayerEntity';
 import { HUD } from '../ui/HUD';
+import { soundManager } from '../audio/SoundManager';
 import type { 
   ServerSnapshot, 
   PlayerState, 
@@ -86,6 +87,9 @@ export class GameScene extends Scene {
 
   create(): void {
     const { width, height } = this.scale;
+
+    // Initialize sound manager
+    soundManager.init();
 
     // Background
     const bg = this.add.graphics();
@@ -401,26 +405,32 @@ export class GameScene extends Scene {
           });
           this.worldEntities.delete(event.entityId);
         }
+        soundManager.playCoreCollect();
         break;
       case 'substation_activated':
         const subEntity = this.worldEntities.get(event.entityId);
         if (subEntity) {
           subEntity.setTint(0x00ff00);
         }
+        soundManager.playSubstation();
         break;
       case 'door_opened':
         // Visual effect
+        soundManager.playButton();
         break;
       case 'player_downed':
         // Handle downed player
+        soundManager.playHurt();
         break;
       case 'ability_used':
         if (event.playerId === this.playerId && this.localPlayer) {
           this.localPlayer.playAbilityEffect();
         }
+        soundManager.playAbility();
         break;
       case 'match_start':
         // Match started
+        soundManager.playMatchStart();
         break;
       case 'chat':
         // Could show chat bubble
@@ -439,6 +449,12 @@ export class GameScene extends Scene {
       playersSurvived: world.winnerIds?.length || 0,
       revives: 0,
     };
+    
+    if (result === 'won') {
+      soundManager.playMatchWin();
+    } else {
+      soundManager.playMatchLose();
+    }
     
     this.hud.showMatchEnd(result, stats);
   }

@@ -3,6 +3,7 @@
 
 import { Scene, GameObjects } from 'phaser';
 import { NetworkManager, ConnectionState } from '../network/NetworkManager';
+import { soundManager } from '../audio/SoundManager';
 
 export class MenuScene extends Scene {
   private nameInput!: HTMLInputElement;
@@ -19,6 +20,9 @@ export class MenuScene extends Scene {
 
   create(): void {
     const { width, height } = this.scale;
+
+    // Initialize sound manager
+    soundManager.init();
 
     // Background
     const bg = this.add.graphics();
@@ -116,46 +120,49 @@ export class MenuScene extends Scene {
   }
 
   private createButton(
-    x: number, 
-    y: number, 
-    w: number, 
-    h: number, 
-    text: string, 
-    color: number, 
-    callback: () => void
-  ): GameObjects.Container {
-    const container = this.add.container(x, y);
+      x: number, 
+      y: number, 
+      w: number, 
+      h: number, 
+      text: string, 
+      color: number, 
+      callback: () => void
+    ): GameObjects.Container {
+      const container = this.add.container(x, y);
     
-    const bg = this.add.graphics();
-    bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-w/2, -h/2, w, h, h/2);
-    container.add(bg);
+      const bg = this.add.graphics();
+      bg.fillStyle(color, 1);
+      bg.fillRoundedRect(-w/2, -h/2, w, h, h/2);
+      container.add(bg);
     
-    const label = this.add.text(0, 0, text, {
-      fontSize: '22px',
-      color: '#ffffff',
-      fontFamily: 'Arial',
-      stroke: '#000000',
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(11);
-    container.add(label);
-
-    container.setSize(w, h);
-    container.setInteractive(new Phaser.Geom.Rectangle(-w/2, -h/2, w, h), Phaser.Geom.Rectangle.Contains);
-    container.on('pointerdown', callback);
-    container.on('pointerover', () => { 
-      bg.clear(); 
-      bg.fillStyle(Phaser.Display.Color.ValueToColor(color).brighten(30).color, 1); 
-      bg.fillRoundedRect(-w/2, -h/2, w, h, h/2); 
-    });
-    container.on('pointerout', () => { 
-      bg.clear(); 
-      bg.fillStyle(color, 1); 
-      bg.fillRoundedRect(-w/2, -h/2, w, h, h/2); 
-    });
-
-    return container;
-  }
+      const label = this.add.text(0, 0, text, {
+        fontSize: '22px',
+        color: '#ffffff',
+        fontFamily: 'Arial',
+        stroke: '#000000',
+        strokeThickness: 2,
+      }).setOrigin(0.5).setDepth(11);
+      container.add(label);
+    
+      container.setSize(w, h);
+      container.setInteractive(new Phaser.Geom.Rectangle(-w/2, -h/2, w, h), Phaser.Geom.Rectangle.Contains);
+      container.on('pointerdown', () => {
+        soundManager.playButton();
+        callback();
+      });
+      container.on('pointerover', () => { 
+        bg.clear(); 
+        bg.fillStyle(Phaser.Display.Color.ValueToColor(color).brighten(30).color, 1); 
+        bg.fillRoundedRect(-w/2, -h/2, w, h, h/2); 
+      });
+      container.on('pointerout', () => { 
+        bg.clear(); 
+        bg.fillStyle(color, 1); 
+        bg.fillRoundedRect(-w/2, -h/2, w, h, h/2); 
+      });
+    
+      return container;
+    }
 
   private async createGame(): void {
     if (!this.playerName.trim()) return;

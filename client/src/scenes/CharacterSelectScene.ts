@@ -4,6 +4,7 @@
 import { Scene } from 'phaser';
 import { NetworkManager, ConnectionState } from '../network/NetworkManager';
 import { CharacterSelectUI, CharacterSelectCallbacks } from '../ui/CharacterSelectUI';
+import { soundManager } from '../audio/SoundManager';
 import type { PlayerInfo, CharacterId, RoomLobbyState } from '@candy-friends/shared';
 import { CHARACTER_ORDER } from '@candy-friends/shared';
 
@@ -31,6 +32,9 @@ export class CharacterSelectScene extends Scene {
 
   create(): void {
     const { width, height } = this.scale;
+
+    // Initialize sound manager
+    soundManager.init();
 
     // Background
     const bg = this.add.graphics();
@@ -112,11 +116,13 @@ export class CharacterSelectScene extends Scene {
 
   private onCharacterSelect(charId: CharacterId): void {
     this.selectedChar = charId;
+    soundManager.playButton();
     // Character selection is handled by server on ready
   }
 
   private onReady(): void {
     if (!this.selectedChar) return;
+    soundManager.playButton();
     this.networkManager.sendReady();
   }
 
