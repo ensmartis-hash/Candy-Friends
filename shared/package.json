@@ -6,7 +6,8 @@
   "main": "./types.ts",
   "exports": {
     ".": "./types.ts",
-    "./abilities": "./abilities.ts"
+    "./abilities": "./abilities.ts",
+    "./zones": "./zones.ts"
   },
   "scripts": {
     "test": "vitest run",
