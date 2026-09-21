@@ -19,6 +19,10 @@ new_classes = ["GameRoom"]
 type = "durable-object"
 storage = "sqlite"
 
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
 [observability]
 enabled = true
 

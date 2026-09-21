@@ -8,6 +8,7 @@ import { GameRoom } from './GameRoom';
 // Type for Cloudflare Env
 export interface Env {
   GAME_ROOM: DurableObjectNamespace;
+  ASSETS: Fetcher;
 }
 
 // Hono app
@@ -43,6 +44,13 @@ app.post('/room', async (c) => {
   // Initialize room by calling it
   await stub.fetch(new Request(`http://internal/init`, { method: 'POST' }));
   return c.json({ code, wsUrl: `${new URL(c.req.url).origin}/room/${code}` });
+});
+
+// Serve the Phaser client from the Workers static assets binding
+app.get('*', async (c) => {
+  const asset = await c.env.ASSETS.fetch(c.req.raw);
+  if (asset.status !== 404) return asset;
+  return c.env.ASSETS.fetch(new Request(new URL('/index.html', c.req.url)));
 });
 
 function generateRoomCode(): string {
